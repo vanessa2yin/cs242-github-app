@@ -4,8 +4,10 @@ import {
     Text,
     View,
     ActivityIndicator,
-    Image,
-    TouchableOpacity
+    FlatList,
+    TouchableOpacity,
+    Linking
+
 } from 'react-native';
 
 
@@ -36,11 +38,31 @@ export default class Repository extends Component {
     }
 
     render() {
-        return (
-            <View style={styles.container}>
-                <Text>Repository page!</Text>
-            </View>
-        );
+        if (this.state.isLoading || this.state.dataSource === null) {
+            return (
+                <View style={styles.container}>
+                    <ActivityIndicator/>
+                </View>
+            )
+        } else {
+            return (
+                <View style={styles.container}>
+                    <FlatList
+                        data={this.state.dataSource}
+                        renderItem={({item}) =>
+                            <TouchableOpacity style={styles.flatView} onPress={ ()=>{ Linking.openURL(item.html_url)}}>
+                                <Text style={styles.name}>{item.name}</Text>
+                                <Text style={styles.owner}>@{item.owner.login}</Text>
+                                <View style={styles.descriptionContainer}>
+                                    <Text style={styles.description}>{item.description}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        }
+                        keyExtractor={(item,index) => item.id}
+                    />
+                </View>
+            );
+        }
     }
 }
 
@@ -51,4 +73,27 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
+    flatView: {
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingTop: 10,
+        paddingBottom: 15,
+        flex: 1,
+        flexDirection: 'column'
+    },
+    name: {
+        fontSize: 20,
+        fontWeight: 'bold'
+    },
+    owner: {
+        fontSize: 15,
+    },
+    descriptionContainer: {
+        alignItems:'flex-start',
+        flexWrap: 'wrap',
+        flexDirection: 'row'
+    },
+    description: {
+        color: 'grey'
+    }
 });
