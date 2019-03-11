@@ -25,6 +25,7 @@ export default class Repository extends Component {
         return fetch(URL, {method: 'GET'})
             .then((response) => response.json())
             .then((responseJson) => {
+                console.log("Get repo.")
                 this.setState({
                     isLoading: false,
                     dataSource: responseJson,
@@ -58,7 +59,7 @@ export default class Repository extends Component {
                                 </View>
                             </TouchableOpacity>
                         }
-                        keyExtractor={(item,index) => item.id}
+                        keyExtractor={(item,index) => item.id.toString()}
                     />
                 </View>
             );

@@ -3,18 +3,22 @@ import {
     StyleSheet,
     Text,
     View,
+    ScrollView,
     ActivityIndicator,
     Image,
-    TouchableOpacity
+    TouchableOpacity,
+    Dimensions
 } from 'react-native';
 import {  MaterialIcons, MaterialCommunityIcons  } from "@expo/vector-icons";
 import {  Actions  } from 'react-native-router-flux';
 import Moment from 'moment';
 
+
 export default class Profile extends Component {
     constructor(props) {
         super(props);
         this.state = {
+            orientation: '',
             isLoading: true,
             dataSource: null,
             name: '',
@@ -30,11 +34,38 @@ export default class Profile extends Component {
         }
     }
 
+    componentWillMount() {
+        this.getOrientation();
+
+        Dimensions.addEventListener( 'change', () =>
+        {
+            this.getOrientation();
+        });
+    }
+
+    getOrientation = () =>
+    {
+        console.log('get orientation')
+        console.log(Dimensions.get('window').width)
+        console.log(Dimensions.get('window').height)
+
+        if( Dimensions.get('window').width < Dimensions.get('window').height ) {
+            this.setState({ orientation: 'portrait' });
+            console.log("new orientation is portrait ")
+        }
+        else
+        {
+            this.setState({ orientation: 'landscape' });
+            console.log("new orientation is landscape")
+        }
+    };
+
     componentDidMount(){
         const URL = 'https://api.github.com/users/vanessa2yin';
         return fetch(URL, {method: 'GET'})
             .then((response) => response.json())
             .then((responseJson) => {
+                console.log("Get user.")
                 this.setState({
                     isLoading: false,
                     dataSource: responseJson,
@@ -66,39 +97,47 @@ export default class Profile extends Component {
             )
         } else {
             return (
-                <View style={styles.container}>
-                    <Image style={styles.avatar} source={{uri: this.state.avatarUrl}}/>
+                <ScrollView contentContainerStyle={styles.container}>
+                    <Image style={[styles.avatar, {margin: ( this.state.orientation === 'portrait' ) ? 20 : 5}]}
+                           source={{uri: this.state.avatarUrl}}/>
                     <Text style={styles.name}> {this.state.name} </Text>
                     <Text style={styles.username}>{this.state.username}@github </Text>
                     <Text/>
                     <Text>{this.state.bio} </Text>
                     <View style={styles.lineStyle}/>
-                    <View style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
+
+                    <View style={styles.emailOrWebRow}>
                         <MaterialIcons style={styles.emailOrWebIcon} name="email" size={20} color='grey'/>
                         <Text style={styles.emailOrWeb}> {this.state.email} </Text>
                     </View>
-                    <View style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
+                    <View style={styles.emailOrWebRow}>
                         <MaterialCommunityIcons style={styles.emailOrWebIcon} name="web" size={20} color='grey'/>
                         <Text style={styles.emailOrWeb}>{this.state.website} </Text>
                     </View>
 
-                    <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.repository()}>
-                        <Text style={styles.buttonNumber}>{this.state.repoCount}</Text>
-                        <Text>Public Repos</Text>
-                    </TouchableOpacity>
-                    <Text/>
-                    <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.follower()}>
-                        <Text style={styles.buttonNumber}>{this.state.followerCount}</Text>
-                        <Text>Follower</Text>
-                    </TouchableOpacity>
-                    <Text/>
-                    <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.following()}>
-                        <Text style={styles.buttonNumber}>{this.state.followingCount} </Text>
-                        <Text>Following</Text>
-                    </TouchableOpacity>
-                    <Text style={{flex: 2}}/>
-                    <Text style={{color: 'grey', marginBottom: 10}}> / Profile created on { Moment(this.state.createDate).format('MMMM DD, YYYY')} / </Text>
-                </View>
+                    <View style={{flex: 1}}/>
+                    <View style={{flexDirection: ( this.state.orientation === 'portrait' ) ? 'column' : 'row'}}>
+                        <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.repository()}>
+                            <Text style={styles.buttonNumber}>{this.state.repoCount}</Text>
+                            <Text>Public Repos</Text>
+                        </TouchableOpacity>
+                        <Text/>
+                        <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.follower()}>
+                            <Text style={styles.buttonNumber}>{this.state.followerCount}</Text>
+                            <Text>Follower</Text>
+                        </TouchableOpacity>
+                        <Text/>
+                        <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.following()}>
+                            <Text style={styles.buttonNumber}>{this.state.followingCount} </Text>
+                            <Text>Following</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={{flex: 2}}/>
+                    <Text style={styles.createDate}>
+                        / Profile created on { Moment(this.state.createDate).format('MMMM DD, YYYY')} /
+                    </Text>
+                </ScrollView>
             )
         }
     }
@@ -107,7 +146,7 @@ export default class Profile extends Component {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flexGrow:1,
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
@@ -115,12 +154,11 @@ const styles = StyleSheet.create({
     lineStyle:{
         width: 250,
         borderWidth: 0.5,
+        backgroundColor: 'grey',
         borderColor:'grey',
         margin:10,
     },
     avatar: {
-        marginTop:50,
-        marginBottom: 20,
         width:120,
         height:120,
         backgroundColor:'#fff',
@@ -133,16 +171,21 @@ const styles = StyleSheet.create({
     username: {
         color: 'grey'
     },
+    emailOrWebRow: {
+        flex: 0.2,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     emailOrWebIcon: {
-        marginLeft: 50,
-        flex: 0.1,
-        alignItems: 'center'
+        marginLeft: 100,
+        flex: 0.2,
     },
     emailOrWeb: {
         marginLeft: 50,
         marginRight:50,
-        flex: 0.9,
-        alignItems: 'center'
+        flex: 0.8,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     borderedbuttonStyle: {
         width: 200,
@@ -154,5 +197,9 @@ const styles = StyleSheet.create({
     buttonNumber: {
         fontSize: 20,
         fontWeight: 'bold'
+    },
+    createDate: {
+        color: 'grey',
+        marginBottom: 10
     }
 });
