@@ -9,15 +9,18 @@ import {  StyleSheet  } from 'react-native';
 import {
     Scene,
     Router,
-    Stack,
+    Stack, Actions,
 } from "react-native-router-flux";
-import {  Foundation, Ionicons, Octicons  } from "@expo/vector-icons";
+import {  Foundation, Ionicons, Octicons, MaterialCommunityIcons  } from "@expo/vector-icons";
 
+/**
+ * return tab icon for each tab in the navigation bar
+ */
 const TabIcon = ({ focused, title }) => {
     let iconColor = focused? "royalblue": "grey";
     if (title === 'Profile') {
         return (
-            <Ionicons name="md-home" size={30} color={iconColor}/>
+            <MaterialCommunityIcons name="file-document" size={30} color={iconColor}/>
         );
     }
     if (title === 'Repository') {
@@ -38,16 +41,23 @@ const TabIcon = ({ focused, title }) => {
 };
 
 export default class App extends Component {
-
+    /**
+     * initialize navigation bar and header
+     */
     render() {
         return (
             <Router>
                 <Stack key="root" hideNavBar>
                     <Scene key="tabbar" tabs tabBarStyle={styles.tabBar}>
-                        <Scene key="profile" component={Profile} title="Profile" color="skyblue" initial icon={TabIcon} back={true}/>
-                        <Scene key="repository" component={Repository} title="Repository" icon={TabIcon} back={true}/>
-                        <Scene key="follower" component={Follower} title={"Follower"} icon={TabIcon} back={true}/>
-                        <Scene key="following" component={Following} title={"Following"} icon={TabIcon} back={true}/>
+                        <Scene key="profile" component={Profile} title="Profile"
+                               onRight={
+                                () => Actions.jump('_profile', {profileUrl : 'https://api.github.com/users/vanessa2yin'})
+                               }
+                               rightTitle = <Ionicons name="md-home" size={30} color="royalblue"/>
+                               initial icon={TabIcon} back={true}/>
+                        <Scene key="repository" component={Repository} title="Repository" icon={TabIcon} back/>
+                        <Scene key="follower" component={Follower} title={"Follower"} icon={TabIcon} back/>
+                        <Scene key="following" component={Following} title={"Following"} icon={TabIcon} back/>
                     </Scene>
                 </Stack>
             </Router>

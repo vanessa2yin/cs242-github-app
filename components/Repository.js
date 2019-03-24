@@ -9,6 +9,7 @@ import {
     Linking
 
 } from 'react-native';
+import {initialize} from "expo/build/Payments";
 
 
 export default class Repository extends Component {
@@ -21,7 +22,23 @@ export default class Repository extends Component {
     }
 
     componentDidMount(){
-        const URL = 'https://api.github.com/users/vanessa2yin/repos';
+        this.initializePage();
+    }
+
+    /**
+     * reset all state info and render new repo page if prop has a new user url
+     * @param prevProps previous props info to compare
+     */
+    componentDidUpdate(prevProps) {
+        if(this.props.profileUrl != null && this.props.profileUrl !== prevProps.profileUrl) // Check if it's a new url
+        {
+            this.initializePage();
+        }
+    }
+
+    initializePage() {
+        console.log("Initialize repo. profileUrl:" + this.props.profileUrl);
+        const URL = this.props.profileUrl == null? 'https://api.github.com/users/vanessa2yin/repos': this.props.profileUrl;
         return fetch(URL, {method: 'GET'})
             .then((response) => response.json())
             .then((responseJson) => {

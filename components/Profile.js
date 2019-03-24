@@ -7,7 +7,8 @@ import {
     ActivityIndicator,
     Image,
     TouchableOpacity,
-    Dimensions
+    Dimensions,
+    Button
 } from 'react-native';
 import {  MaterialIcons, MaterialCommunityIcons  } from "@expo/vector-icons";
 import {  Actions  } from 'react-native-router-flux';
@@ -34,6 +35,9 @@ export default class Profile extends Component {
         };
     }
 
+    /**
+     * event listener for orientation change
+     */
     componentWillMount() {
         this.getOrientation();
 
@@ -43,9 +47,11 @@ export default class Profile extends Component {
         });
     }
 
+    /**
+     * change orientation state status according to the window orientation
+     */
     getOrientation = () =>
     {
-
         if( Dimensions.get('window').width < Dimensions.get('window').height ) {
             this.setState({ orientation: 'portrait' });
             console.log("new orientation is portrait ")
@@ -57,16 +63,29 @@ export default class Profile extends Component {
         }
     };
 
+    /**
+     * preset home page
+     */
     componentDidMount(){
         this.initializePage();
     }
 
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        this.initializePage();
+    /**
+     * reset all state info and render new profile page if prop has a new user url
+     * @param prevProps previous props info to compare
+     */
+    componentDidUpdate(prevProps) {
+        if(this.props.profileUrl != null && this.props.profileUrl !== prevProps.profileUrl) // Check if it's a new url
+        {
+            this.initializePage();
+        }
     }
 
+    /**
+     * store info into state according to the profile url
+     */
     initializePage(){
-        console.log("profileUrl:" + this.props.profileUrl);
+        console.log("Initialize profile. profileUrl:" + this.props.profileUrl);
         const URL = this.props.profileUrl == null? 'https://api.github.com/users/vanessa2yin': this.props.profileUrl;
         return fetch(URL, {method: 'GET'})
             .then((response) => response.json())
@@ -82,8 +101,11 @@ export default class Profile extends Component {
                     email: responseJson.email===null? 'N/A':responseJson.email.toString(),
                     website: responseJson.blog===null || responseJson.blog===''? ' N/A':responseJson.blog.toString(),
                     repoCount: responseJson.public_repos.toString(),
+                    repoUrl: responseJson.repos_url.toString(),
                     followerCount: responseJson.followers.toString(),
+                    followerUrl: responseJson.followers_url.toString(),
                     followingCount: responseJson.following.toString(),
+                    followingUrl: responseJson.following_url.toString(),
                     createDate: responseJson.created_at.toString()
                 }, function(){
                 });
@@ -94,6 +116,9 @@ export default class Profile extends Component {
             });
     }
 
+    /**
+     * render function for profile page
+     */
     render() {
         if (this.state.isLoading || this.state.dataSource === null) {
             return (
@@ -123,7 +148,7 @@ export default class Profile extends Component {
 
                     <View style={{flex: 1}}/>
                     <View style={{flexDirection: ( this.state.orientation === 'portrait' ) ? 'column' : 'row'}}>
-                        <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.repository()}>
+                        <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.jump('_repository', {profileUrl : this.state.repoUrl})}>
                             <Text style={styles.buttonNumber}>{this.state.repoCount}</Text>
                             <Text>Public Repos</Text>
                         </TouchableOpacity>
