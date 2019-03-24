@@ -55,9 +55,9 @@ export default class App extends Component {
                                }
                                rightTitle = <Ionicons name="md-home" size={30} color="royalblue"/>
                                initial icon={TabIcon} back={true}/>
-                        <Scene key="repository" component={Repository} title="Repository" icon={TabIcon} back/>
-                        <Scene key="follower" component={Follower} title={"Follower"} icon={TabIcon} back/>
-                        <Scene key="following" component={Following} title={"Following"} icon={TabIcon} back/>
+                        <Scene key="repository" component={Repository} title="Repository" icon={TabIcon} onBack={()=>{Actions.pop()}} back/>
+                        <Scene key="follower" component={Follower} title={"Follower"} icon={TabIcon} onBack={()=>{Actions.pop()}} back/>
+                        <Scene key="following" component={Following} title={"Following"} icon={TabIcon} onBack={()=>{Actions.pop()}} back/>
                     </Scene>
                 </Stack>
             </Router>

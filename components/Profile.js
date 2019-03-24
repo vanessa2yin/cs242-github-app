@@ -8,7 +8,6 @@ import {
     Image,
     TouchableOpacity,
     Dimensions,
-    Button
 } from 'react-native';
 import {  MaterialIcons, MaterialCommunityIcons  } from "@expo/vector-icons";
 import {  Actions  } from 'react-native-router-flux';
