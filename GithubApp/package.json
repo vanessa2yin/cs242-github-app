@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^9.0.0",
+    "buffer": "^5.2.1",
     "expo": "^32.0.0",
     "moment": "^2.24.0",
     "native-base": "^2.12.1",

@@ -1,19 +1,43 @@
 import React, { Component } from 'react';
 import {Alert, TouchableOpacity, TextInput, View, StyleSheet, Text, Image} from 'react-native';
 import {AntDesign} from "@expo/vector-icons";
+import {Buffer} from "buffer";
+import {Actions} from "react-native-router-flux";
 
-export default class App extends Component {
+export default class App extends Component
+{
     constructor(props) {
         super(props);
         this.state = {
             username: '',
             password: '',
+            validate: false,
         };
     }
 
+    /**
+     * get username and password from user's input and set validate state if response status is 200 OK
+     */
     onLogin() {
-        const { username, password } = this.state;
-        Alert.alert('Credentials', `${username} + ${password}`);
+        const hash = Buffer.from(this.state.username + ":" + this.state.password).toString('base64');
+        fetch('https://api.github.com/user', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${hash}`
+            },
+        }).then((response) => {
+            if(response.status === 200) {
+                this.setState({
+                    validate: true
+                });
+                Actions.jump('_profile', {profileUrl : 'https://api.github.com/users/vanessa2yin', hideTabBar:false});
+            } else {
+                Alert.alert("Error", 'Invalid username or password!');
+            }
+            return response.status;
+        }).catch((error) => {
+                console.error(error);
+            });
     }
 
     render() {

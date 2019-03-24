@@ -49,7 +49,7 @@ export default class App extends Component {
         return (
             <Router>
                 <Stack key="root" hideNavBar>
-                    {/*<Scene key="login" component={Login}/>*/}
+                    {/*<Scene key="login" component={Login} initial/>*/}
                     <Scene key="tabbar" tabs tabBarStyle={styles.tabBar}>
                         <Scene key="profile" component={Profile} title="Profile"
                                onRight={

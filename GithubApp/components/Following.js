@@ -1,7 +1,18 @@
 import React, {Component} from 'react';
-import {ActivityIndicator, FlatList, Image, Linking, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Image,
+    Linking,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import {Actions} from "react-native-router-flux";
 import {SimpleLineIcons} from "@expo/vector-icons";
+import * as Constants from './constants.js';
 
 export default class Following extends Component {
     constructor(props) {
@@ -19,11 +30,17 @@ export default class Following extends Component {
     /**
      * reset all state info and render new repo page if prop has a new user url
      * @param prevProps previous props info to compare
+     * @param prevState
      */
-    componentDidUpdate(prevProps) {
+    componentDidUpdate(prevProps, prevState) {
         if(this.props.profileUrl != null && this.props.profileUrl !== prevProps.profileUrl) // Check if it's a new url
         {
             this.initializePage();
+        }
+        if(this.props.newFollow != null && this.props.newFollow !== prevProps.newFollow && // Check if following info changes
+            !this.state.dataSource.includes(this.props.newFollow)) {
+            this.setState({dataSource: [...this.state.dataSource, this.props.newFollow]});
+            console.log(this.state.dataSource);
         }
     }
 
@@ -53,16 +70,17 @@ export default class Following extends Component {
                     <ActivityIndicator/>
                 </View>
             )
-        } else {['p']
+        } else {
             return (
                 <View style={styles.container}>
                     <FlatList
                         data={this.state.dataSource}
+                        extraData={this.state.dataSource}
                         renderItem={({item}) =>
                             <TouchableOpacity style={styles.flatView} onPress={ ()=>{ Actions.jump('_profile', {profileUrl : item.url}) }}>
                                 <Image style={styles.avatar} source={{uri: item.avatar_url}}/>
                                 <Text style={styles.name}>@{item.login}</Text>
-                                <TouchableOpacity style={styles.followButtons} onPress={() => this.unFollowUser(item.login)}>
+                                <TouchableOpacity style={styles.followButtons} onPress={() => this.unFollowUser(item)}>
                                     <SimpleLineIcons name="user-unfollow" size={30} color="royalblue"/>
                                 </TouchableOpacity>
                             </TouchableOpacity>
@@ -72,6 +90,28 @@ export default class Following extends Component {
                 </View>
             );
         }
+    }
+    unFollowUser(item) {
+        console.log('Unfollow' + item.login);
+
+        // send unfollow reqeust to github api
+        const URL = 'https://api.github.com/user/following/' + item.login;
+        fetch(URL, {
+            method: 'DELETE',
+            headers: new Headers({
+                'Authorization': Constants.TOKEN,
+            }),
+        })
+            .then(res => {
+                return res.text()
+            }) // OR res.json()
+            .then(res => console.log(res));
+
+        // change flatlist data state
+        let dataSource = [...this.state.dataSource];
+        let index = dataSource.indexOf(item);
+        dataSource.splice(index, 1);
+        this.setState({ dataSource });
     }
 }
 

@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import {Button, Alert, ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import {Actions} from "react-native-router-flux";
 import {SimpleLineIcons} from "@expo/vector-icons";
+import Following from "./Following";
+import * as Constants from './constants.js';
 
 export default class Follower extends Component {
     constructor(props) {
@@ -67,7 +69,7 @@ export default class Follower extends Component {
                             } }>
                                 <Image style={styles.avatar} source={{uri: item.avatar_url}}/>
                                 <Text style={styles.name}>@{item.login}</Text>
-                                <TouchableOpacity style={styles.followButtons} onPress={() => this.followUser(item.login)}>
+                                <TouchableOpacity style={styles.followButtons} onPress={() => this.followUser(item)}>
                                     <SimpleLineIcons name="user-follow" size={30} color="royalblue"/>
                                 </TouchableOpacity>
                             </TouchableOpacity>
@@ -79,11 +81,21 @@ export default class Follower extends Component {
         }
     }
 
-    followUser(username) {
-        Alert.alert('Follow', `${username}`);
-    }
-    unFollowUser(username) {
-        Alert.alert('Unfollow', `${username}`);
+    followUser(item) {
+        console.log('Follow' + item.login);
+        // send follow request to github api
+        const URL = 'https://api.github.com/user/following/' + item.login;
+        fetch(URL, {
+            method: 'PUT',
+            headers: new Headers({
+                'Authorization': Constants.TOKEN,
+            }),
+        })
+            .then(res => {
+                Actions.jump('_following', {newFollow: item});
+                return res.text()
+            }) // OR res.json()
+            .then(res => console.log(res))
     }
 }
 
