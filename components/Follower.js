@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {ActivityIndicator, FlatList, Image, Linking, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Actions} from "react-native-router-flux";
 
 export default class Follower extends Component {
     constructor(props) {
@@ -41,7 +42,7 @@ export default class Follower extends Component {
                     <FlatList
                         data={this.state.dataSource}
                         renderItem={({item}) =>
-                            <TouchableOpacity style={styles.flatView} onPress={ ()=>{ Linking.openURL(item.html_url)}}>
+                            <TouchableOpacity style={styles.flatView} onPress={ ()=> Actions.jump('_profile', {profileUrl : item.url}) }>
                                 <Image style={styles.avatar} source={{uri: item.avatar_url}}/>
                                 <Text style={styles.name}>@{item.login}</Text>
                             </TouchableOpacity>

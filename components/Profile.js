@@ -31,7 +31,7 @@ export default class Profile extends Component {
             followerCount: '',
             followingCount: '',
             createDate: ''
-        }
+        };
     }
 
     componentWillMount() {
@@ -45,9 +45,6 @@ export default class Profile extends Component {
 
     getOrientation = () =>
     {
-        console.log('get orientation')
-        console.log(Dimensions.get('window').width)
-        console.log(Dimensions.get('window').height)
 
         if( Dimensions.get('window').width < Dimensions.get('window').height ) {
             this.setState({ orientation: 'portrait' });
@@ -61,7 +58,16 @@ export default class Profile extends Component {
     };
 
     componentDidMount(){
-        const URL = 'https://api.github.com/users/vanessa2yin';
+        this.initializePage();
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        this.initializePage();
+    }
+
+    initializePage(){
+        console.log("profileUrl:" + this.props.profileUrl);
+        const URL = this.props.profileUrl == null? 'https://api.github.com/users/vanessa2yin': this.props.profileUrl;
         return fetch(URL, {method: 'GET'})
             .then((response) => response.json())
             .then((responseJson) => {
@@ -69,12 +75,12 @@ export default class Profile extends Component {
                 this.setState({
                     isLoading: false,
                     dataSource: responseJson,
-                    name: responseJson.name.toString(),
+                    name: responseJson.name===null?'Anonymous':responseJson.name.toString(),
                     username: responseJson.login.toString(),
                     avatarUrl: responseJson.avatar_url.toString(),
                     bio: responseJson.bio===null? 'N/A':responseJson.bio.toString(),
                     email: responseJson.email===null? 'N/A':responseJson.email.toString(),
-                    website: responseJson.blog===null? 'N/A':responseJson.blog.toString(),
+                    website: responseJson.blog===null || responseJson.blog===''? ' N/A':responseJson.blog.toString(),
                     repoCount: responseJson.public_repos.toString(),
                     followerCount: responseJson.followers.toString(),
                     followingCount: responseJson.following.toString(),
@@ -102,8 +108,8 @@ export default class Profile extends Component {
                            source={{uri: this.state.avatarUrl}}/>
                     <Text style={styles.name}> {this.state.name} </Text>
                     <Text style={styles.username}>{this.state.username}@github </Text>
-                    <Text/>
-                    <Text>{this.state.bio} </Text>
+
+                    <Text style={styles.bio}>{this.state.bio} </Text>
                     <View style={styles.lineStyle}/>
 
                     <View style={styles.emailOrWebRow}>
@@ -152,7 +158,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     lineStyle:{
-        width: 250,
+        width: 350,
         borderWidth: 0.5,
         backgroundColor: 'grey',
         borderColor:'grey',
@@ -170,6 +176,10 @@ const styles = StyleSheet.create({
     },
     username: {
         color: 'grey'
+    },
+    bio: {
+        paddingLeft: 20,
+        paddingRight: 20,
     },
     emailOrWebRow: {
         flex: 0.2,
