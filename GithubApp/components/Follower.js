@@ -1,5 +1,16 @@
 import React, {Component} from 'react';
-import {Button, Alert, ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+    Button,
+    Alert,
+    ActivityIndicator,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+    AsyncStorage
+} from 'react-native';
 import {Actions} from "react-native-router-flux";
 import {SimpleLineIcons} from "@expo/vector-icons";
 import Following from "./Following";
@@ -13,6 +24,27 @@ export default class Follower extends Component {
             dataSource: null,
         }
     }
+
+    _storeData = async (name, user) => {
+        try {
+            await AsyncStorage.setItem(name, user);
+        } catch (error) {
+            // Error saving data
+        }
+    };
+
+    _retrieveData = async () => {
+        try {
+            const value = await AsyncStorage.getItem('follower', function(){});
+            let follower = JSON.parse(value);
+            if (follower !== null) {
+                // We have data!!
+                console.log('stored follower: '+ follower[0].login);
+            }
+        } catch (error) {
+            // Error retrieving data
+        }
+    };
 
     componentDidMount(){
         this.initializePage();
@@ -36,6 +68,9 @@ export default class Follower extends Component {
             .then((response) => response.json())
             .then((responseJson) => {
                 console.log("Get follower.")
+                //store user profile
+                this._storeData('follower', JSON.stringify(responseJson));
+
                 this.setState({
                     isLoading: false,
                     dataSource: responseJson,
@@ -48,6 +83,21 @@ export default class Follower extends Component {
             });
     }
 
+    /**
+     * render unfollow button only when it is my own profile
+     */
+    _renderFollowIcon(item) {
+        if (this.props.profileUrl == null || this.props.profileUrl === 'https://api.github.com/users/vanessa2yin/follower') {
+            return (
+                <TouchableOpacity style={styles.followButtons} onPress={() => this.followUser(item)}>
+                    <SimpleLineIcons name="user-follow" size={30} color="#ff6f6f"/>
+                </TouchableOpacity>
+            );
+        } else {
+            return null;
+        }
+    }
+
     render() {
         if (this.state.isLoading || this.state.dataSource === null) {
             return (
@@ -58,6 +108,7 @@ export default class Follower extends Component {
         } else {
             return (
                 <View style={styles.container}>
+                    <Button title='Show Data' onPress={this._retrieveData}/>
                     <FlatList
                         data={this.state.dataSource}
                         renderItem={({item}) =>
@@ -69,9 +120,7 @@ export default class Follower extends Component {
                             } }>
                                 <Image style={styles.avatar} source={{uri: item.avatar_url}}/>
                                 <Text style={styles.name}>@{item.login}</Text>
-                                <TouchableOpacity style={styles.followButtons} onPress={() => this.followUser(item)}>
-                                    <SimpleLineIcons name="user-follow" size={30} color="royalblue"/>
-                                </TouchableOpacity>
+                                {this._renderFollowIcon(item)}
                             </TouchableOpacity>
                         }
                         keyExtractor={(item,index) => item.id.toString()}

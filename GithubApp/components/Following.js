@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import {
     ActivityIndicator,
-    Alert,
+    Alert, AsyncStorage, Button,
     FlatList,
     Image,
     Linking,
@@ -22,6 +22,27 @@ export default class Following extends Component {
             dataSource: null,
         }
     }
+
+    _storeData = async (name, user) => {
+        try {
+            await AsyncStorage.setItem(name, user);
+        } catch (error) {
+            // Error saving data
+        }
+    };
+
+    _retrieveData = async () => {
+        try {
+            const value = await AsyncStorage.getItem('following', function(){});
+            let following = JSON.parse(value);
+            if (following !== null) {
+                // We have data!!
+                console.log('stored following: '+ following[0].login);
+            }
+        } catch (error) {
+            // Error retrieving data
+        }
+    };
 
     componentDidMount(){
         this.initializePage();
@@ -50,7 +71,10 @@ export default class Following extends Component {
         return fetch(URL, {method: 'GET'})
             .then((response) => response.json())
             .then((responseJson) => {
-                console.log("Get following.")
+                console.log("Get following.");
+                //store user profile
+                this._storeData('following', JSON.stringify(responseJson));
+
                 this.setState({
                     isLoading: false,
                     dataSource: responseJson,
@@ -63,6 +87,21 @@ export default class Following extends Component {
             });
     }
 
+    /**
+     * render unfollow button only when it is my own profile
+     */
+    _renderUnFollowIcon(item) {
+        if (this.props.profileUrl == null || this.props.profileUrl === 'https://api.github.com/users/vanessa2yin/following') {
+            return (
+                <TouchableOpacity style={styles.followButtons} onPress={() => this.unFollowUser(item)}>
+                    <SimpleLineIcons name="user-unfollow" size={30} color="#ff6f6f"/>
+                </TouchableOpacity>
+            );
+        } else {
+            return null;
+        }
+    }
+
     render() {
         if (this.state.isLoading || this.state.dataSource === null) {
             return (
@@ -73,16 +112,20 @@ export default class Following extends Component {
         } else {
             return (
                 <View style={styles.container}>
+                    <Button title='Show Data' onPress={this._retrieveData}/>
                     <FlatList
                         data={this.state.dataSource}
                         extraData={this.state.dataSource}
                         renderItem={({item}) =>
-                            <TouchableOpacity style={styles.flatView} onPress={ ()=>{ Actions.jump('_profile', {profileUrl : item.url}) }}>
+                            <TouchableOpacity style={styles.flatView} onPress={ ()=>{
+                                Actions.replace('_repository', {hideTabBar:true});
+                                Actions.replace('_follower', {hideTabBar:true});
+                                Actions.replace('_following', {hideTabBar:true});
+                                Actions.jump('_profile', {profileUrl : item.url, hideTabBar:true})
+                            }}>
                                 <Image style={styles.avatar} source={{uri: item.avatar_url}}/>
                                 <Text style={styles.name}>@{item.login}</Text>
-                                <TouchableOpacity style={styles.followButtons} onPress={() => this.unFollowUser(item)}>
-                                    <SimpleLineIcons name="user-unfollow" size={30} color="royalblue"/>
-                                </TouchableOpacity>
+                                {this._renderUnFollowIcon(item)}
                             </TouchableOpacity>
                         }
                         keyExtractor={(item,index) => item.id.toString()}

@@ -13,7 +13,8 @@ import {
 import {  MaterialIcons, MaterialCommunityIcons  } from "@expo/vector-icons";
 import {  Actions  } from 'react-native-router-flux';
 import Moment from 'moment';
-
+import * as Constants from "./constants";
+import {AsyncStorage} from 'react-native';
 
 export default class Profile extends Component {
     constructor(props) {
@@ -34,6 +35,28 @@ export default class Profile extends Component {
             createDate: ''
         };
     }
+
+    _storeData = async (name, user) => {
+        try {
+            await AsyncStorage.setItem(name, user);
+        } catch (error) {
+            // Error saving data
+        }
+    };
+
+    _retrieveData = async () => {
+        try {
+            const value = await AsyncStorage.getItem('user', function(){});
+            let user = JSON.parse(value);
+            if (user !== null) {
+                // We have data!!
+                console.log('stored username: '+ user.login);
+            }
+        } catch (error) {
+            // Error retrieving data
+        }
+    };
+
 
     /**
      * event listener for orientation change
@@ -87,10 +110,17 @@ export default class Profile extends Component {
     initializePage(){
         console.log("Initialize profile. profileUrl:" + this.props.profileUrl);
         const URL = this.props.profileUrl == null? 'https://api.github.com/users/vanessa2yin': this.props.profileUrl;
-        return fetch(URL, {method: 'GET'})
+        return fetch(URL, {
+            method: 'GET',
+            headers: new Headers({
+                'Authorization': Constants.TOKEN,
+            }),})
             .then((response) => response.json())
             .then((responseJson) => {
-                console.log("Get user.")
+                console.log("Get user.");
+                //store user profile
+                this._storeData('user', JSON.stringify(responseJson));
+
                 this.setState({
                     isLoading: false,
                     dataSource: responseJson,
@@ -129,6 +159,7 @@ export default class Profile extends Component {
         } else {
             return (
                 <ScrollView contentContainerStyle={styles.container}>
+                    <Button title='Show Data' onPress={this._retrieveData}/>
                     <Image style={[styles.avatar, {margin: ( this.state.orientation === 'portrait' ) ? 20 : 5}]}
                            source={{uri: this.state.avatarUrl}}/>
                     <Text style={styles.name}> {this.state.name} </Text>
@@ -138,11 +169,11 @@ export default class Profile extends Component {
                     <View style={styles.lineStyle}/>
 
                     <View style={styles.emailOrWebRow}>
-                        <MaterialIcons style={styles.emailOrWebIcon} name="email" size={20} color='grey'/>
+                        <MaterialIcons style={styles.emailOrWebIcon} name="email" size={20} color='#ff6f6f'/>
                         <Text style={styles.emailOrWeb}> {this.state.email} </Text>
                     </View>
                     <View style={styles.emailOrWebRow}>
-                        <MaterialCommunityIcons style={styles.emailOrWebIcon} name="web" size={20} color='grey'/>
+                        <MaterialCommunityIcons style={styles.emailOrWebIcon} name="web" size={20} color='#ff6f6f'/>
                         <Text style={styles.emailOrWeb}>{this.state.website} </Text>
                     </View>
 
@@ -150,17 +181,17 @@ export default class Profile extends Component {
                     <View style={{flexDirection: ( this.state.orientation === 'portrait' ) ? 'column' : 'row'}}>
                         <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.jump('_repository', {profileUrl : this.state.repoUrl})}>
                             <Text style={styles.buttonNumber}>{this.state.repoCount}</Text>
-                            <Text>Public Repos</Text>
+                            <Text style={styles.buttonText}>Public Repos</Text>
                         </TouchableOpacity>
                         <Text/>
                         <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.jump('_follower', {profileUrl : this.state.followerUrl})}>
                             <Text style={styles.buttonNumber}>{this.state.followerCount}</Text>
-                            <Text>Follower</Text>
+                            <Text style={styles.buttonText}>Follower</Text>
                         </TouchableOpacity>
                         <Text/>
                         <TouchableOpacity style={styles.borderedbuttonStyle} onPress={() => Actions.jump('_following', {profileUrl : this.state.followingUrl})}>
                             <Text style={styles.buttonNumber}>{this.state.followingCount} </Text>
-                            <Text>Following</Text>
+                            <Text style={styles.buttonText}>Following</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -224,14 +255,18 @@ const styles = StyleSheet.create({
     },
     borderedbuttonStyle: {
         width: 200,
-        borderWidth: 0.5,
         borderColor: 'grey',
         alignItems: 'center',
         borderRadius:20,
+        backgroundColor: '#ff6f6f'
     },
     buttonNumber: {
         fontSize: 20,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color: 'white'
+    },
+    buttonText: {
+        color: 'white'
     },
     createDate: {
         color: 'grey',

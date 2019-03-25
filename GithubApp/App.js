@@ -18,7 +18,7 @@ import {  Foundation, Ionicons, Octicons, MaterialCommunityIcons  } from "@expo/
  * return tab icon for each tab in the navigation bar
  */
 const TabIcon = ({ focused, title }) => {
-    let iconColor = focused? "royalblue": "grey";
+    let iconColor = focused? "#ff6f6f": "grey";
     if (title === 'Profile') {
         return (
             <MaterialCommunityIcons name="file-document" size={30} color={iconColor}/>
@@ -50,7 +50,13 @@ export default class App extends Component {
             <Router>
                 <Stack key="root" hideNavBar>
                     {/*<Scene key="login" component={Login} initial/>*/}
-                    <Scene key="tabbar" tabs tabBarStyle={styles.tabBar}>
+                    <Scene key="tabbar"
+                           tabs
+                           navigationBarStyle={{backgroundColor: '#ff6f6f'}}
+                           titleStyle={{color: '#FFFFFF', fontWeight: 'bold'}}
+                           backButtonTintColor='#FFFFFF'
+                           activeTintColor='#ff6f6f'
+                           tabBarStyle={styles.tabBar}>
                         <Scene key="profile" component={Profile} title="Profile"
                                onRight={
                                 () => {
@@ -60,7 +66,7 @@ export default class App extends Component {
                                     Actions.jump('_profile', {profileUrl : 'https://api.github.com/users/vanessa2yin', hideTabBar:false});
                                 }
                                }
-                               rightTitle = <Ionicons name="md-home" size={30} color="royalblue"/>
+                               rightTitle = <Ionicons name="md-home" size={30} color="#FFFFFF"/>
                                initial icon={TabIcon}/>
                         <Scene key="repository" component={Repository} title="Repository" icon={TabIcon} back/>
                         <Scene key="follower" component={Follower} title={"Follower"} icon={TabIcon} back/>
@@ -75,6 +81,6 @@ export default class App extends Component {
 const styles = StyleSheet.create({
     tabBar: {
         backgroundColor: '#FFFFFF',
-        color: 'skyblue',
+        color: '#ff6f6f',
     },
 });
